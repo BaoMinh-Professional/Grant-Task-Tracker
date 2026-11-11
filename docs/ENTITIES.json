@@ -1,0 +1,77 @@
+// Illustration; the real schema is the EF configurations and migrations in GrantTracker.Data.
+Table Users {
+  Id Guid [pk]
+  Name string(100) [not null]
+  Email string(254) [not null, unique]
+}
+
+Table Grants {
+  Id Guid [pk]
+  ReferenceNumber string(20) [not null, unique]
+  OrganisationName string(200) [not null]
+  ApplicationDate date [not null]
+  Status enum [not null]
+  ClosedAtUtc timestamp [null, note: "CK_Grants_Status_ClosedAt: Closed iff timestamp is set"]
+}
+
+Table Tasks {
+  Id Guid [pk]
+  Title string(200) [not null]
+  GrantId Guid [not null]
+  DueDate date [not null]
+  Priority enum [not null]
+  Status enum [not null]
+  CompletedAtUtc timestamp [null, note: "CK_Tasks_Status_CompletedAt: Completed iff timestamp is set"]
+  CreatedAtUtc timestamp [not null]
+  Indexes {
+    (Status, DueDate)
+  }
+}
+
+Table AssignUserGrant {
+  Id Guid [pk]
+  UserId Guid [not null]
+  GrantId Guid [not null]
+  Indexes {
+    (GrantId, UserId) [unique]
+    UserId
+  }
+}
+
+Table AssignUserTask {
+  Id Guid [pk]
+  UserId Guid [not null]
+  TaskId Guid [not null]
+  Indexes {
+    (TaskId, UserId) [unique]
+    UserId
+  }
+}
+
+Table Audits {
+  Id Guid [pk]
+  OccurredAtUtc timestamp [not null]
+  UserId Guid [not null]
+  Action string(100) [not null]
+  EntityType string(50) [null]
+  EntityId Guid [null]
+  Outcome enum [not null]
+  ErrorCode string(50) [null]
+  TraceId string(32) [null]
+  IdempotencyKey string(100) [null]
+}
+
+Table IdempotencyRecords {
+  Key string(100) [pk]
+  Operation string(100) [not null]
+  RequestHash string(64) [not null]
+  ResultJson string [not null]
+  CreatedAtUtc timestamp [not null]
+}
+
+Ref Task_Grant: Tasks.GrantId > Grants.Id [delete: restrict]
+Ref Audit_User: Audits.UserId > Users.Id [delete: restrict]
+Ref AssignUserGrant_User: AssignUserGrant.UserId > Users.Id [delete: restrict]
+Ref AssignUserGrant_Grant: AssignUserGrant.GrantId > Grants.Id [delete: restrict]
+Ref AssignUserTask_User: AssignUserTask.UserId > Users.Id [delete: restrict]
+Ref AssignUserTask_Task: AssignUserTask.TaskId > Tasks.Id [delete: restrict]

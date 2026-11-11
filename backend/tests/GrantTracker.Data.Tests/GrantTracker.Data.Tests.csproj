@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><IsPackable>false</IsPackable><IsTestProject>true</IsTestProject><UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner></PropertyGroup>
+  <ItemGroup><PackageReference Include="xunit.v3"/><PackageReference Include="Microsoft.Extensions.TimeProvider.Testing"/><PackageReference Include="Microsoft.EntityFrameworkCore.Design"><PrivateAssets>all</PrivateAssets></PackageReference></ItemGroup>
+  <ItemGroup><Using Include="Xunit"/><ProjectReference Include="..\..\src\GrantTracker.Data\GrantTracker.Data.csproj"/></ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GrantTracker.Api/GrantTracker.Api.csproj" />
+    <Project Path="src/GrantTracker.Core/GrantTracker.Core.csproj" />
+    <Project Path="src/GrantTracker.Data/GrantTracker.Data.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GrantTracker.Api.Tests/GrantTracker.Api.Tests.csproj" />
+    <Project Path="tests/GrantTracker.Core.Tests/GrantTracker.Core.Tests.csproj" />
+    <Project Path="tests/GrantTracker.Data.Tests/GrantTracker.Data.Tests.csproj" />
+  </Folder>
+</Solution>

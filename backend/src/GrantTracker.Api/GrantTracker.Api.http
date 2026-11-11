@@ -1,0 +1,31 @@
+@baseUrl = http://localhost:5080
+# With the https launch profile, use instead:
+# @baseUrl = https://localhost:7080
+
+# Seeded users for later endpoints:
+# Alex Nguyen   00000000-0000-0000-0000-000000000001
+# Priya Sharma  00000000-0000-0000-0000-000000000002
+# Sam Taylor    00000000-0000-0000-0000-000000000003
+# Jordan Lee    00000000-0000-0000-0000-000000000004
+# Maria Garcia  00000000-0000-0000-0000-000000000005
+
+### Login as Alex
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "Alex.Nguyen@Example.org " }
+
+### Unknown email
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "nobody@example.org" }
+
+### Blank email
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "" }
+
+### Unknown route
+GET {{baseUrl}}/nope

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup><ProjectReference Include="..\GrantTracker.Core\GrantTracker.Core.csproj" /><ProjectReference Include="..\GrantTracker.Data\GrantTracker.Data.csproj" /><PackageReference Include="Serilog.AspNetCore" /><PackageReference Include="Microsoft.EntityFrameworkCore.Design"><PrivateAssets>all</PrivateAssets><IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets></PackageReference></ItemGroup>
+  <ItemGroup>
+    <Folder Include="logs\" />
+  </ItemGroup>
+</Project>
