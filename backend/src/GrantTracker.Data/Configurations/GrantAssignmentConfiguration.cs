@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace GrantTracker.Data.Configurations;
 
+// Present but not used by the grant and task features (assignment is out of scope).
 public sealed class GrantAssignmentConfiguration : IEntityTypeConfiguration<GrantAssignment>
 {
     public void Configure(EntityTypeBuilder<GrantAssignment> builder)

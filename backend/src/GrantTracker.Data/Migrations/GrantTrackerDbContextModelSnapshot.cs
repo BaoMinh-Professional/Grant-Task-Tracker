@@ -211,8 +211,14 @@ namespace GrantTracker.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1);
 
                     b.HasKey("Id");
 
@@ -223,6 +229,8 @@ namespace GrantTracker.Data.Migrations
                     b.ToTable("Tasks", null, t =>
                         {
                             t.HasCheckConstraint("CK_Tasks_Status_CompletedAt", "(\"Status\" = 'Completed') = (\"CompletedAtUtc\" IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_Tasks_Title_Length", "length(\"Title\") <= 100");
                         });
                 });
 

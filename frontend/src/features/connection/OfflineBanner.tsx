@@ -13,7 +13,7 @@ export function OfflineBanner() {
     <div className="banner" role="alert">
       <p className="banner-text">
         <strong>Can&apos;t reach the server.</strong> Check your connection, then
-        select Sign in again.
+        try again.
       </p>
     </div>
   )

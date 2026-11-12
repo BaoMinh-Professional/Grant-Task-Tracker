@@ -424,6 +424,68 @@
       </div>
     </section>
 
+    <section class="guide-section" aria-labelledby="tables">
+      <h2 id="tables">Tables, filters and dialogs</h2>
+      <p class="guide-intro">The grants list and the tasks view use a filter bar above a table. The table scrolls sideways inside its own box on narrow screens. A completed row is tinted and says so in its status tag. Add task opens a native dialog.</p>
+
+      <div class="filter-bar">
+        <div class="field">
+          <label class="field-label" for="demo-status">Status</label>
+          <select class="select" id="demo-status">
+            <option>All</option>
+            <option selected>Open</option>
+            <option>Closed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <caption class="visually-hidden">Grant tasks sample</caption>
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Due date</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Verify bank details</td>
+              <td><span class="tag tag-high">High priority</span></td>
+              <td class="num">07-Mar-2026 <span class="tag tag-overdue">Overdue by 3 days</span></td>
+              <td><span class="tag tag-open">Pending</span></td>
+              <td><div class="table-actions"><button class="btn btn-secondary" type="button">Complete</button></div></td>
+            </tr>
+            <tr class="row-completed">
+              <td>Check eligibility documents</td>
+              <td><span class="tag tag-high">High priority</span></td>
+              <td class="num">19-Jan-2026</td>
+              <td><span class="tag tag-completed">Completed</span></td>
+              <td><div class="table-actions"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <dialog class="dialog" open aria-labelledby="demo-dialog-title">
+        <h3 class="dialog-title" id="demo-dialog-title">Add task</h3>
+        <form class="dialog-form" method="dialog">
+          <div class="field">
+            <label class="field-label" for="demo-dialog-title-input">Title</label>
+            <input class="input" id="demo-dialog-title-input" value="Call applicant">
+            <p class="field-hint">Up to 100 characters.</p>
+          </div>
+          <div class="dialog-actions">
+            <button class="btn btn-quiet" type="button">Cancel</button>
+            <button class="btn btn-primary" type="submit">Add task</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
     <section class="guide-section" aria-labelledby="preview">
       <h2 id="preview">Main page sketch</h2>
       <p class="guide-intro">A sketch with seed data to show the theme on a full screen. It is not in the front-end base, where the main page stays blank; the real layout is decided in the main page plan.</p>

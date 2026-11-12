@@ -25,20 +25,24 @@ public sealed class IdempotencyBehaviour<TRequest, TResponse>(
 
         var operation = typeof(TRequest).Name;
         var hash = RequestHasher.Hash(request);
-        var existing = await store.FindAsync(key, cancellationToken);
-        if (existing is not null) return Replay(existing, operation, hash);
 
-        var result = await next();
-        store.Add(new IdempotencyRecord(key, operation, hash, JsonSerializer.Serialize(result), clock.UtcNow));
+        // The key is reserved before the work, in the same transaction. A concurrent duplicate waits on the
+        // unique key until this transaction ends, then replays the committed result. If the command fails,
+        // the transaction rolls back and the reservation disappears with it.
+        var record = new IdempotencyRecord(key, operation, hash, resultJson: "", clock.UtcNow);
+        store.Add(record);
         try { await unitOfWork.SaveChangesAsync(cancellationToken); }
         catch (UniqueConstraintViolationException)
         {
             unitOfWork.DiscardChanges();
-            existing = await store.FindAsync(key, cancellationToken)
+            var existing = await store.FindAsync(key, cancellationToken)
                 ?? throw new InvalidOperationException("The winning idempotency record could not be found.");
             return Replay(existing, operation, hash);
         }
 
+        var result = await next();
+        record.SetResult(JsonSerializer.Serialize(result));
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return result;
     }
 

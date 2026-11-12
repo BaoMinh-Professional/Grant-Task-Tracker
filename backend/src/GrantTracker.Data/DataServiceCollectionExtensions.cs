@@ -1,6 +1,8 @@
 using GrantTracker.Core.Auditing;
 using GrantTracker.Core.Common.Persistence;
+using GrantTracker.Core.Grants;
 using GrantTracker.Core.Idempotency;
+using GrantTracker.Core.Tasks;
 using GrantTracker.Core.Users;
 using GrantTracker.Data.Repositories;
 using GrantTracker.Data.Seeding;
@@ -16,6 +18,8 @@ public static class DataServiceCollectionExtensions
         services.AddDbContext<GrantTrackerDbContext>((provider, options) => options.UseSqlite(connectionString(provider)));
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IGrantRepository, GrantRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IAuditLog, AuditLog>();
         services.AddScoped<IIdempotencyStore, IdempotencyStore>();
         services.AddScoped<DbSeeder>();

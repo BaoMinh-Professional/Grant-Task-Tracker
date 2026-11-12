@@ -1,5 +1,6 @@
 namespace GrantTracker.Core.Assignments;
 
+// Present but not used by the grant and task features (assignment is out of scope).
 public sealed class GrantAssignment
 {
     private GrantAssignment() { }

@@ -1,6 +1,8 @@
 using GrantTracker.Data;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace GrantTracker.Data.Tests.Infrastructure;
 
@@ -8,11 +10,14 @@ public sealed class SqliteTestDatabase : IAsyncDisposable
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
 
-    public async Task InitialiseAsync()
+    public async Task InitialiseAsync(string? targetMigration = null)
     {
         await connection.OpenAsync();
         await using var db = CreateContext();
-        await db.Database.MigrateAsync();
+        if (targetMigration is not null)
+            await db.GetService<IMigrator>().MigrateAsync(targetMigration);
+        else
+            await db.Database.MigrateAsync();
     }
 
     public GrantTrackerDbContext CreateContext() =>

@@ -17,6 +17,8 @@ public sealed class AppExceptionHandler(
             NotFoundException notFound => (404, notFound.Code, notFound.Message),
             ConflictException conflict => (409, conflict.Code, conflict.Message),
             IdempotencyKeyMismatchException mismatch => (422, mismatch.Code, mismatch.Message),
+            VersionConflictException versionConflict => (412, versionConflict.Code, versionConflict.Message),
+            PreconditionRequiredException preconditionRequired => (428, preconditionRequired.Code, preconditionRequired.Message),
             _ => (500, ErrorCodes.UnexpectedError, "An unexpected error occurred.")
         };
         if (status == 500) logger.LogError(exception, "Unhandled exception for trace {TraceId}.", httpContext.TraceIdentifier);

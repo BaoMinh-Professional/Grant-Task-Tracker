@@ -12,4 +12,7 @@ public sealed class IdempotencyRecord
     public string RequestHash { get; private set; } = "";
     public string ResultJson { get; private set; } = "";
     public DateTime CreatedAtUtc { get; private set; }
+
+    // A reservation holds an empty result until the command succeeds. It is only committed with that result.
+    public void SetResult(string resultJson) => ResultJson = resultJson;
 }

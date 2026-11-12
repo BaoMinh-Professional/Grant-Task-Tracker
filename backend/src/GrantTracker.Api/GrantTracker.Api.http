@@ -29,3 +29,44 @@ Content-Type: application/json
 
 ### Unknown route
 GET {{baseUrl}}/nope
+
+### List grants (all)
+GET {{baseUrl}}/grants
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### List open grants
+GET {{baseUrl}}/grants?status=Open
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### Grant detail (GR-100001)
+GET {{baseUrl}}/grants/00000000-0000-0000-0000-000000000101
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### Add task to GR-100004
+POST {{baseUrl}}/grants/00000000-0000-0000-0000-000000000104/tasks
+X-User-Id: 00000000-0000-0000-0000-000000000001
+Idempotency-Key: {{$guid}}
+Content-Type: application/json
+
+{ "title": "Call applicant", "dueDate": "2026-03-10", "priority": "Low" }
+
+### Close GR-100001 (refused while a High task is pending, BR-5)
+PUT {{baseUrl}}/grants/00000000-0000-0000-0000-000000000101/close
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### Complete task "Verify bank details"
+PUT {{baseUrl}}/tasks/00000000-0000-0000-0000-000000000201/complete
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### Overdue tasks
+GET {{baseUrl}}/tasks/overdue
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### Edit task "Verify bank details" (If-Match is the task's version)
+PUT {{baseUrl}}/tasks/00000000-0000-0000-0000-000000000201
+X-User-Id: 00000000-0000-0000-0000-000000000001
+If-Match: "1"
+Idempotency-Key: {{$guid}}
+Content-Type: application/json
+
+{ "title": "Verify bank details", "dueDate": "2026-03-07", "priority": "High" }

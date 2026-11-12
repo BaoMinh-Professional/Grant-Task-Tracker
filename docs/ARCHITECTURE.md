@@ -118,12 +118,18 @@ and `traceId` (the 32-hex W3C trace id, identical to the log field `@tr`).
 
 | Status | When | `code` |
 | --- | --- | --- |
-| 400 | invalid input (`ValidationProblemDetails` with `errors`) | `VALIDATION_FAILED`, `MALFORMED_REQUEST`, `IDEMPOTENCY_KEY_REQUIRED`, later `BR-2`, `BR-3` |
+| 400 | invalid input (`ValidationProblemDetails` with `errors`) | `VALIDATION_FAILED`, `MALFORMED_REQUEST`, `IDEMPOTENCY_KEY_REQUIRED`, `BR-2`, `BR-3` |
 | 401 | missing or unknown user, unknown login email | `USER_REQUIRED`, `UNKNOWN_USER` |
 | 404 | unknown id or route | `NOT_FOUND` |
-| 409 | valid input, conflicting state | later `BR-1`, `BR-5`, `ASSIGNEE_NOT_ON_GRANT` |
+| 409 | valid input, conflicting state | `BR-1` (task on a closed grant), `BR-5` (close with a pending High task), `GRANT_CLOSED` (complete or edit a pending task on a closed grant), `TASK_COMPLETED` (edit a completed task) |
+| 412 | edit with an `If-Match` version that is not the task's current version | `VERSION_CONFLICT` |
 | 422 | idempotency key reused with a different request | `IDEMPOTENCY_KEY_MISMATCH` |
+| 428 | edit without an `If-Match` header | `PRECONDITION_REQUIRED` |
 | 500 | unexpected failure (generic message, no stack trace) | `UNEXPECTED_ERROR` |
+
+Business rules are checked in this order for **Add task** (Q7): the grant exists
+(404), then the input (`BR-3`, `BR-2`, required fields, all errors in one `400`),
+then the closed-grant rule (`BR-1`).
 
 ## 7. Cross-cutting concerns
 
@@ -136,7 +142,7 @@ and `traceId` (the 32-hex W3C trace id, identical to the log field `@tr`).
 | **Logging and correlation (OP-4)** | Serilog: console plus a daily rolling compact-JSON file (`logs/grant-tracker-<date>.json`). Every line carries the trace id (`@tr`); user id, request name and idempotency key are added as properties. The same trace id is in ProblemDetails and audit rows. |
 | **Persistence** | SQLite file `App_Data/grant-tracker.db` (relative to the content root, git-ignored). EF Core migrations are applied at startup; seed data (relative to "today") is added only to an empty database. Enums are stored as text. |
 | **Configuration** | `appsettings.json` sections `ConnectionStrings`, `BusinessTime`, `Cors`, `LogFile`, `Serilog`. Read lazily through options so the test host can override them. No secrets. |
-| **CORS** | Allowed origins from configuration (default the Vite dev server); allows `X-User-Id`, `Idempotency-Key`, `Content-Type`. |
+| **CORS** | Allowed origins from configuration (default the Vite dev server); allows `X-User-Id`, `Idempotency-Key`, `Content-Type`, `If-Match`; exposes the `ETag` response header so the browser can read a task's version. |
 
 ## 8. Data model
 
@@ -148,9 +154,9 @@ database design (DBML syntax), kept in sync with that schema.
 | --- | --- | --- |
 | `Users` | Seeded officers (identification) | Email unique, stored lowercase |
 | `Grants` | Grant records | Unique `ReferenceNumber`; `Status` (`Open`/`Closed`) + `ClosedAtUtc`, kept consistent by a check constraint |
-| `Tasks` (entity `GrantTask`) | Tasks on a grant | `Status` (`Pending`/`Completed`) + `CompletedAtUtc`, kept consistent by a check constraint; "overdue" is computed from `DueDate` and today, never stored |
-| `AssignUserGrant` | Officers assigned to a grant | Unique `(GrantId, UserId)` |
-| `AssignUserTask` | Officers assigned to a task | Unique `(TaskId, UserId)`; a task's assignee must also be assigned to its grant (Core rule, `409 ASSIGNEE_NOT_ON_GRANT`) |
+| `Tasks` (entity `GrantTask`) | Tasks on a grant | `Status` (`Pending`/`Completed`) + `CompletedAtUtc`, kept consistent by a check constraint; `Title` at most 100 characters (`CK_Tasks_Title_Length`); `Version` is the optimistic concurrency token (starts at 1, increases on every change); "overdue" is computed from `DueDate` and today, never stored |
+| `AssignUserGrant` | Officers assigned to a grant | Present but not used by the grant and task features (Q16); unique `(GrantId, UserId)` |
+| `AssignUserTask` | Officers assigned to a task | Present but not used by the grant and task features (Q16); unique `(TaskId, UserId)` |
 | `Audits` | One row per command (U2) | User, action, target, outcome, error code, trace id |
 | `IdempotencyRecords` | Stored results of idempotent commands | Keyed by the idempotency key |
 
@@ -162,10 +168,11 @@ Guid keys everywhere except `IdempotencyRecords`. Enums are stored as text.
 | --- | --- | --- | --- | --- |
 | `Core.Tests` | unit: rules, handlers, mediator, behaviours, clock | none | `today` argument / `FakeTimeProvider` | Moq on Core ports only |
 | `Data.Tests` | integration: queries, constraints, migrations, seed | SQLite in-memory, fresh per test | `FakeTimeProvider` | none |
-| `Api.Tests` | HTTP end to end: status codes, ProblemDetails, middleware order | named SQLite in-memory per test host | `FakeTimeProvider` | none |
+| `Api.Tests` | HTTP end to end: status codes, ProblemDetails, middleware order | named SQLite in-memory per test host | `FakeBusinessClock` set on `GrantTrackerApiFactory.Clock` (fixed day, settable) | none |
 
 One command from `backend/`: `dotnet test`. Tests never open the real database file
-and never depend on the real date or on test order.
+and never depend on the real date or on test order. Front-end tests run with
+`npm.cmd run test` from `frontend/` (Vitest with jsdom; `mockApi` replaces `fetch`).
 
 ## 10. Known limitations
 
@@ -174,3 +181,5 @@ and never depend on the real date or on test order.
   (OP-1/OP-2 are out of scope for now).
 - The idempotency table grows without bound until a cleanup job exists.
 - Unexpected (500) failures write no audit row; the logs are the record.
+- Lists are unpaged (OQ-8): `GET /grants` returns every grant and `GET /grants/{id}` every task.
+- Data can be stale between refetches (OQ-5): the grant detail refetches when the tasks view or the Add task dialog opens and on window focus, with no polling. The server still enforces every rule, so a stale screen shows the refusal.

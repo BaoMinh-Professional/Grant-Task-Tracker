@@ -16,19 +16,20 @@ Table Grants {
 
 Table Tasks {
   Id Guid [pk]
-  Title string(200) [not null]
+  Title string(100) [not null, note: "CK_Tasks_Title_Length: at most 100 characters"]
   GrantId Guid [not null]
   DueDate date [not null]
   Priority enum [not null]
   Status enum [not null]
   CompletedAtUtc timestamp [null, note: "CK_Tasks_Status_CompletedAt: Completed iff timestamp is set"]
   CreatedAtUtc timestamp [not null]
+  Version int [not null, default: 1, note: "optimistic concurrency token"]
   Indexes {
     (Status, DueDate)
   }
 }
 
-Table AssignUserGrant {
+Table AssignUserGrant [note: "Present, not used by the grant and task features"] {
   Id Guid [pk]
   UserId Guid [not null]
   GrantId Guid [not null]
@@ -38,7 +39,7 @@ Table AssignUserGrant {
   }
 }
 
-Table AssignUserTask {
+Table AssignUserTask [note: "Present, not used by the grant and task features"] {
   Id Guid [pk]
   UserId Guid [not null]
   TaskId Guid [not null]

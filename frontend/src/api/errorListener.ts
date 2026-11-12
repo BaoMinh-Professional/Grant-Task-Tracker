@@ -7,6 +7,10 @@ import { notify } from '../components/notify'
 import { setServerUnreachable } from '../features/connection/connectionSlice'
 import { signedOut } from '../features/session/sessionSlice'
 
+const inlineCodes = new Set(['VALIDATION_FAILED', 'NOT_FOUND', 'BR-2', 'BR-3', 'IDEMPOTENCY_KEY_MISMATCH'])
+const inlineStatuses = new Set([409, 412, 428])
+
+
 function getEndpointName(action: unknown): string | undefined {
   if (
     typeof action !== 'object' ||
@@ -61,9 +65,7 @@ export function registerErrorListeners(startListening: AppStartListening) {
 
       if (
         error.kind === 'problem' &&
-        (error.code === 'VALIDATION_FAILED' ||
-          error.code === 'NOT_FOUND' ||
-          error.status === 409)
+        (inlineCodes.has(error.code) || inlineStatuses.has(error.status))
       ) {
         return
       }

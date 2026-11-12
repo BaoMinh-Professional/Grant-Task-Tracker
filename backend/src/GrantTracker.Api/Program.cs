@@ -19,7 +19,8 @@ var cors = builder.Configuration.GetSection(CorsSettings.SectionName).Get<CorsSe
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(cors.AllowedOrigins)
     .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-    .WithHeaders(HeaderNames.UserId, HeaderNames.IdempotencyKey, "Content-Type")));
+    .WithHeaders(HeaderNames.UserId, HeaderNames.IdempotencyKey, "Content-Type", "If-Match")
+    .WithExposedHeaders("ETag")));
 builder.Services.AddOptions<BusinessTimeOptions>()
     .Bind(builder.Configuration.GetSection(BusinessTimeOptions.SectionName))
     .Validate(options => { try { _ = TimeZoneInfo.FindSystemTimeZoneById(options.TimeZoneId); return true; } catch { return false; } },

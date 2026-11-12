@@ -23,5 +23,27 @@ public sealed class GrantTask
     public GrantTaskStatus Status { get; private set; }
     public DateTime? CompletedAtUtc { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
+    public int Version { get; private set; } = 1;
     public ICollection<TaskAssignment> Assignments { get; private set; } = new List<TaskAssignment>();
+
+    public bool Complete(DateTime completedAtUtc)
+    {
+        if (Status == GrantTaskStatus.Completed) return false;
+        Status = GrantTaskStatus.Completed;
+        CompletedAtUtc = completedAtUtc;
+        Version++;
+        return true;
+    }
+
+    public bool IsOverdue(DateOnly today) => Status == GrantTaskStatus.Pending && DueDate < today;
+
+    public int DaysOverdue(DateOnly today) => IsOverdue(today) ? today.DayNumber - DueDate.DayNumber : 0;
+
+    public void Edit(ValidatedTask valid)
+    {
+        Title = valid.Title;
+        DueDate = valid.DueDate;
+        Priority = valid.Priority;
+        Version++;
+    }
 }

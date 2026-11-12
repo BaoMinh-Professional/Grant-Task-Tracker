@@ -24,10 +24,6 @@ public sealed class DbSeeder(GrantTrackerDbContext dbContext, IBusinessClock clo
         await dbContext.SaveChangesAsync(cancellationToken);
         SeedData.AddTasks(dbContext, clock.Today, clock.UtcNow);
         await dbContext.SaveChangesAsync(cancellationToken);
-        dbContext.TaskAssignments.AddRange(SeedData.CreateTaskAssignments());
-        await dbContext.SaveChangesAsync(cancellationToken);
-        dbContext.GrantAssignments.AddRange(SeedData.CreateGrantAssignments());
-        await dbContext.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Database seeded with demo users, grants and tasks.");
+        logger.LogInformation("Database seeded with demo officers, grants and tasks.");
     }
 }

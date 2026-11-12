@@ -18,6 +18,10 @@ public sealed class EfUnitOfWork(GrantTrackerDbContext dbContext) : IUnitOfWork
         {
             throw new UniqueConstraintViolationException("A unique constraint was violated.", exception);
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new VersionConflictException();
+        }
     }
 
     public void DiscardChanges() => dbContext.ChangeTracker.Clear();

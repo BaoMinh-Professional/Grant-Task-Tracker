@@ -8,11 +8,33 @@ const codeMessages: Record<string, string> = {
 
 const endpointActionPhrases: Record<string, string> = {
   login: 'Sign-in',
+  getGrants: 'Loading grants',
+  getGrant: 'Loading the grant',
+  addTask: 'Adding the task',
+  completeTask: 'Completing the task',
+  closeGrant: 'Closing the grant',
 }
 
 export function getActionPhrase(endpointName: string): string {
   return endpointActionPhrases[endpointName] ?? 'That action'
 }
+
+export function getInlineErrorMessage(error: ApiError): string {
+  if (error.kind === 'unreachable') {
+    return "Can't reach the server. Check your connection, then try again. Trying again is safe: the same request won't be saved twice."
+  }
+
+  if (error.kind === 'problem' && error.code === 'IDEMPOTENCY_KEY_MISMATCH') {
+    return "This request doesn't match your earlier attempt. Check the details, then select Add task again."
+  }
+
+  if (error.kind === 'problem') {
+    return error.title
+  }
+
+  return "That didn't work. Try again."
+}
+
 
 export function getErrorToastTitle(
   error: ApiError,
