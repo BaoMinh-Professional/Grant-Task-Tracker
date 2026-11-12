@@ -7,7 +7,7 @@
 > [Open Questions](#13-open-questions); index in section 3.3).
 > **Source of decisions:** [ideal.md](./ideal.md) (✅ green, 2026-11-11). Decisions
 > recorded there are carried in as-is and are not re-argued here.
-> **Companion doc:** [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) describes the
+> **Companion doc:** [docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md) describes the
 > resulting architecture (written with this plan at the developer's request; Phase 7
 > reconciles it with the real code).
 
@@ -856,7 +856,7 @@ public partial class Program;                                         // for Web
 
 ### Phase 7: Architecture and pattern docs (approved `docs/` changes)
 
-- [ ] 7.1 Reconcile [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) with the code
+- [ ] 7.1 Reconcile [docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md) with the code
       as built (names, order, file paths); change its status line to "matches code".
 - [ ] 7.2 Create `docs/patterns/backend.md`: how to add a use case (folder, command or
       query, handler, `IAuditContext` calls, DI line, controller action, tests at each

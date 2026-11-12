@@ -1,0 +1,37 @@
+.main-header {
+  background: var(--sheet);
+  border-bottom: 1px solid var(--rule);
+}
+
+.main-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 4rem;
+  padding-inline: var(--space-5);
+}
+
+.main-account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.main-content {
+  min-height: 1px;
+}
+
+@media (max-width: 40rem) {
+  .main-header-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: var(--space-3);
+  }
+
+  .main-account {
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+  }
+}

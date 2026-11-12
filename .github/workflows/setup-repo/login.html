@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in to Grant Task Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@200..800&display=swap">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .login-page {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    .login-page > .banner {
+      grid-row: 1;
+    }
+
+    .login-main {
+      grid-row: 2;
+      align-self: center;
+      justify-self: center;
+      display: grid;
+      gap: var(--space-6);
+      width: min(22rem, 100% - 2 * var(--space-5));
+      padding-block: var(--space-8);
+    }
+
+    .login-title {
+      font-size: var(--text-3xl);
+    }
+
+    .login-form {
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    .login-form .btn {
+      width: 100%;
+    }
+
+    /* Toaster position matches the planned Sonner setting (bottom-right). */
+    .toaster {
+      position: fixed;
+      right: var(--space-5);
+      bottom: var(--space-5);
+      display: grid;
+      gap: var(--space-2);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* Mockup-only chrome: not part of the design. */
+    .mockup-states {
+      position: fixed;
+      left: var(--space-4);
+      bottom: var(--space-4);
+      display: grid;
+      gap: var(--space-2);
+      max-width: 15rem;
+      padding: var(--space-3);
+      font-size: var(--text-sm);
+      background: var(--sheet);
+      border: 1px dashed var(--ink-muted);
+    }
+
+    .mockup-states fieldset {
+      display: grid;
+      gap: var(--space-1);
+      margin: 0;
+      padding: var(--space-2);
+      border: 0;
+    }
+
+    .mockup-states legend {
+      padding: 0 var(--space-1);
+      font-weight: 700;
+    }
+
+    @media (max-width: 40rem) {
+      .login-title {
+        font-size: var(--text-2xl);
+      }
+
+      .login-main {
+        align-self: start;
+        padding-block: var(--space-7);
+      }
+
+      .toaster {
+        right: var(--space-4);
+        left: var(--space-4);
+      }
+
+      .mockup-states {
+        position: static;
+        max-width: none;
+        margin: 0 var(--space-5) var(--space-5);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="banner" id="offline-banner" role="alert" hidden>
+      <p class="banner-text"><strong>Can't reach the server.</strong> Check your connection, then select Sign in again.</p>
+    </div>
+
+    <main class="login-main" id="main">
+      <h1 class="login-title">Sign in</h1>
+
+      <form class="login-form" id="login-form" novalidate>
+        <div class="field">
+          <label class="field-label" for="email">Email</label>
+          <input class="input input-lg" id="email" name="email" type="email" autocomplete="email" spellcheck="false" autofocus>
+          <p class="field-error" id="email-error" hidden></p>
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="submit">Sign in</button>
+      </form>
+    </main>
+
+    <ol class="toaster" id="toaster" aria-label="Notifications" aria-live="polite"></ol>
+
+    <aside class="mockup-states" aria-label="Mockup controls">
+      <fieldset>
+        <legend>Mockup only: preview state</legend>
+        <label><input type="radio" name="state" value="default" checked> Default</label>
+        <label><input type="radio" name="state" value="empty"> Email missing</label>
+        <label><input type="radio" name="state" value="format"> Email format wrong</label>
+        <label><input type="radio" name="state" value="unknown"> Unknown email (401)</label>
+        <label><input type="radio" name="state" value="loading"> Signing in</label>
+        <label><input type="radio" name="state" value="offline"> Server unreachable</label>
+        <label><input type="radio" name="state" value="server"> Server error (500)</label>
+      </fieldset>
+      <p>Or type a seeded email, such as priya.sharma@example.org, and select Sign in.</p>
+    </aside>
+  </div>
+
+  <script>
+    const officers = {
+      "alex.nguyen@example.org": "Alex Nguyen",
+      "priya.sharma@example.org": "Priya Sharma",
+      "sam.taylor@example.org": "Sam Taylor",
+      "jordan.lee@example.org": "Jordan Lee",
+      "maria.garcia@example.org": "Maria Garcia"
+    };
+    const messages = {
+      required: "Enter your email.",
+      format: "Enter an email in the format name@example.org.",
+      unknown: "No officer uses this email. Check the spelling, or ask an administrator to add you."
+    };
+
+    const form = document.getElementById("login-form");
+    const email = document.getElementById("email");
+    const emailError = document.getElementById("email-error");
+    const submit = document.getElementById("submit");
+    const banner = document.getElementById("offline-banner");
+    const toaster = document.getElementById("toaster");
+
+    function reset() {
+      email.removeAttribute("aria-invalid");
+      email.removeAttribute("aria-describedby");
+      emailError.hidden = true;
+      banner.hidden = true;
+      toaster.replaceChildren();
+      submit.disabled = false;
+      submit.textContent = "Sign in";
+    }
+
+    function showFieldError(message) {
+      emailError.textContent = message;
+      emailError.hidden = false;
+      email.setAttribute("aria-invalid", "true");
+      email.setAttribute("aria-describedby", "email-error");
+    }
+
+    function setLoading() {
+      submit.disabled = true;
+      submit.textContent = "Signing in…";
+    }
+
+    function showServerErrorToast() {
+      const traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+      const item = document.createElement("li");
+      item.className = "toast toast-error";
+      item.setAttribute("role", "alert");
+      item.innerHTML =
+        '<p class="toast-title">Sign-in failed because of a server error.</p>' +
+        '<p>Try again in a minute. If it keeps failing, give this reference to support.</p>' +
+        '<p class="reference">Reference <span class="reference-code num">' + traceId.slice(0, 8) + '</span>' +
+        '<button class="btn btn-quiet" type="button" data-copy>Copy full reference</button></p>' +
+        '<button class="toast-close" type="button" aria-label="Close notification" data-close>&times;</button>';
+      item.querySelector("[data-copy]").addEventListener("click", (event) => {
+        navigator.clipboard?.writeText(traceId);
+        event.currentTarget.textContent = "Copied";
+      });
+      item.querySelector("[data-close]").addEventListener("click", () => item.remove());
+      toaster.replaceChildren(item);
+    }
+
+    function showSignedIn(name) {
+      document.getElementById("main").innerHTML =
+        '<h1 class="login-title">Signed in</h1>' +
+        '<p>You are signed in as ' + name + '. The main page opens next; it isn\'t part of this mockup.</p>';
+    }
+
+    function applyState(state) {
+      reset();
+      if (state === "empty") {
+        email.value = "";
+        showFieldError(messages.required);
+      } else if (state === "format") {
+        email.value = "alex.nguyen";
+        showFieldError(messages.format);
+      } else if (state === "unknown") {
+        email.value = "alex.nguyen@exmple.org";
+        showFieldError(messages.unknown);
+      } else if (state === "loading") {
+        email.value = "alex.nguyen@example.org";
+        setLoading();
+      } else if (state === "offline") {
+        email.value = "alex.nguyen@example.org";
+        banner.hidden = false;
+      } else if (state === "server") {
+        email.value = "alex.nguyen@example.org";
+        showServerErrorToast();
+      }
+    }
+
+    document.querySelectorAll('input[name="state"]').forEach((radio) =>
+      radio.addEventListener("change", () => applyState(radio.value)));
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      reset();
+      const value = email.value.trim().toLowerCase();
+      if (!value) {
+        showFieldError(messages.required);
+        email.focus();
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        showFieldError(messages.format);
+        email.focus();
+        return;
+      }
+      setLoading();
+      setTimeout(() => {
+        reset();
+        if (officers[value]) {
+          showSignedIn(officers[value]);
+        } else {
+          showFieldError(messages.unknown);
+          email.focus();
+        }
+      }, 700);
+    });
+  </script>
+</body>
+</html>

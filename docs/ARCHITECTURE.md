@@ -2,16 +2,17 @@
 
 > **Status:** matches code. Update it **in the same commit** as any behaviour change
 > (`AGENTS.md`).
-> **Decision log:** [.github/setup-repo/ideal.md](../.github/setup-repo/ideal.md)
-> (why), [.github/setup-repo/setup-be-plan.md](../.github/setup-repo/setup-be-plan.md)
+> **Decision log:** [.github/workflows/setup-repo/ideal.md](../.github/workflows/setup-repo/ideal.md)
+> (why), [.github/workflows/setup-repo/setup-be-plan.md](../.github/workflows/setup-repo/setup-be-plan.md)
 > (how). No ADRs and no diagrams, by decision (Q21).
 
 ## 1. Purpose
 
 Grant Task Tracker is a small proof of concept for grants officers: see grants, add
 and complete tasks, and spot overdue work. The back end is an ASP.NET Core Web API
-on .NET 10 with EF Core and SQLite. The front end (React, TypeScript, Redux Toolkit,
-RTK Query) is planned separately.
+on .NET 10 with EF Core and SQLite. The React, TypeScript, Redux Toolkit and RTK
+Query front end follows the [UI style](UI-STYLE.md) and
+[front-end patterns](patterns/frontend.md).
 
 Guiding principles:
 

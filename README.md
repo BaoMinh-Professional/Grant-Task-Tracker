@@ -1,6 +1,6 @@
 # Grant Task Tracker
 
-A proof-of-concept community grants portal for grants officers to manage grants and their tasks. The back end is ASP.NET Core/.NET 10, EF Core and SQLite; the planned front end uses React, TypeScript, Redux Toolkit and RTK Query. The initial API base provides demo-user identification and the cross-cutting infrastructure for later grant/task features.
+A proof-of-concept community grants portal for grants officers to manage grants and their tasks. The back end is ASP.NET Core/.NET 10, EF Core and SQLite; the front end uses React, TypeScript, Redux Toolkit and RTK Query. The initial API base provides demo-user identification and the cross-cutting infrastructure for later grant/task features.
 
 ## Run the API
 
@@ -13,6 +13,22 @@ dotnet run --project src/GrantTracker.Api --launch-profile http
 ```
 
 The API listens at `http://localhost:5080`; it migrates and seeds `backend/src/GrantTracker.Api/App_Data/grant-tracker.db`. Try the requests in `backend/src/GrantTracker.Api/GrantTracker.Api.http`. Demo user IDs: Alex Nguyen `00000000-0000-0000-0000-000000000001`; Priya Sharma `00000000-0000-0000-0000-000000000002`; Sam Taylor `00000000-0000-0000-0000-000000000003`; Jordan Lee `00000000-0000-0000-0000-000000000004`; Maria Garcia `00000000-0000-0000-0000-000000000005`.
+
+## Run the front end
+
+Start the API on port 5080 first, then open a second terminal at the repository
+root:
+
+```powershell
+cd frontend
+npm.cmd ci
+npm.cmd run dev
+```
+
+Open `http://localhost:5173`
+
+The email sign-in identifies a seeded demo officer; it is **identification, not
+authentication**. It does not verify a password or protect a real account.
 
 ### Optional: HTTPS
 

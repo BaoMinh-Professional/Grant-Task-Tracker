@@ -1,0 +1,43 @@
+.login-page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.login-page > .banner {
+  grid-row: 1;
+}
+
+.login-main {
+  grid-row: 2;
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  gap: var(--space-6);
+  width: min(22rem, calc(100% - 2 * var(--space-5)));
+  padding-block: var(--space-8);
+}
+
+.login-title {
+  font-size: var(--text-3xl);
+}
+
+.login-form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.login-form .btn {
+  width: 100%;
+}
+
+@media (max-width: 40rem) {
+  .login-title {
+    font-size: var(--text-2xl);
+  }
+
+  .login-main {
+    align-self: start;
+    padding-block: var(--space-7);
+  }
+}

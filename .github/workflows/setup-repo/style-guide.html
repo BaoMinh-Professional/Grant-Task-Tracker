@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theme reference for Grant Task Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@200..800&display=swap">
+  <link rel="stylesheet" href="theme.css">
+  <style>
+    .guide {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-5) var(--space-9);
+      display: grid;
+      gap: var(--space-8);
+    }
+
+    .guide-header {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .guide-title {
+      font-size: var(--text-xl);
+    }
+
+    .guide-intro {
+      max-width: var(--measure);
+      color: var(--ink-muted);
+    }
+
+    .guide-section {
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    .guide-section h2 {
+      font-size: var(--text-lg);
+      padding-bottom: var(--space-2);
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
+      gap: var(--space-4);
+    }
+
+    .swatch {
+      display: grid;
+      align-content: start;
+      gap: var(--space-1);
+      font-size: var(--text-sm);
+    }
+
+    .swatch-chip {
+      height: 4.5rem;
+      border: 1px solid var(--rule);
+    }
+
+    .swatch-name {
+      font-size: var(--text-base);
+      font-weight: 700;
+    }
+
+    .swatch-use {
+      color: var(--ink-muted);
+    }
+
+    .type-scale {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .type-row {
+      display: grid;
+      grid-template-columns: 7rem 1fr;
+      align-items: baseline;
+      gap: var(--space-4);
+    }
+
+    .type-meta {
+      color: var(--ink-muted);
+      font-size: var(--text-sm);
+    }
+
+    .row-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .guide-subtitle {
+      font-size: var(--text-base);
+    }
+
+    .toast-demo {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: start;
+      gap: var(--space-4);
+    }
+
+    .demo-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: var(--space-5);
+    }
+
+    /* Main page preview */
+
+    .app {
+      display: grid;
+      grid-template-columns: 19rem 1fr;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+    }
+
+    .app-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--sheet);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .app-user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-sm);
+    }
+
+    .grant-list {
+      margin: 0;
+      padding: var(--space-4) 0;
+      list-style: none;
+      border-right: 1px solid var(--rule);
+    }
+
+    .grant-list-heading {
+      padding: 0 var(--space-5) var(--space-3);
+      font-size: var(--text-base);
+    }
+
+    .grant-link {
+      display: grid;
+      gap: 0.125rem;
+      padding: var(--space-3) var(--space-5);
+      color: var(--ink);
+      text-decoration: none;
+      border-left: 4px solid transparent;
+    }
+
+    .grant-link:hover {
+      color: var(--ink);
+      background: var(--sheet);
+    }
+
+    .grant-link[aria-current="true"] {
+      background: var(--council-tint);
+      border-left-color: var(--council);
+    }
+
+    .grant-ref {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--ink-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .grant-org {
+      font-weight: 700;
+    }
+
+    .grant-meta {
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+
+    .grant-detail {
+      display: grid;
+      align-content: start;
+      gap: var(--space-5);
+      padding: var(--space-5) var(--space-6) var(--space-6);
+    }
+
+    .grant-detail-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: end;
+      gap: var(--space-4);
+    }
+
+    .grant-detail-title {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .grant-detail-title h3 {
+      font-size: var(--text-xl);
+    }
+
+    .tasks {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      background: var(--sheet);
+      border-top: 2px solid var(--ink);
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--space-2) var(--space-5);
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--rule);
+      border-left: 6px solid transparent;
+    }
+
+    .task-overdue {
+      border-left-color: var(--highlighter);
+    }
+
+    .task-title {
+      font-size: var(--text-md);
+      font-weight: 700;
+    }
+
+    .task-completed .task-title {
+      color: var(--ink-muted);
+      font-weight: 400;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--ink-muted);
+    }
+
+    .add-task {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      align-items: end;
+      gap: var(--space-4);
+      padding: var(--space-5);
+      background: var(--sheet);
+      border: 1px solid var(--rule);
+    }
+
+    .add-task h4 {
+      grid-column: 1 / -1;
+      margin: 0;
+      font-size: var(--text-md);
+    }
+
+    .select {
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+        linear-gradient(135deg, var(--ink) 50%, transparent 50%),
+        linear-gradient(var(--highlighter-soft), var(--highlighter-soft));
+      background-position:
+        calc(100% - 1.1rem) 55%,
+        calc(100% - 0.75rem) 55%,
+        0 0;
+      background-size: 0.35rem 0.35rem, 0.35rem 0.35rem, 0 100%;
+      padding-right: 2rem;
+    }
+
+    .select:focus {
+      background-size: 0.35rem 0.35rem, 0.35rem 0.35rem, 100% 100%;
+      animation: none;
+    }
+
+    @media (max-width: 52rem) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .grant-list {
+        border-right: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .add-task {
+        grid-template-columns: 1fr;
+      }
+
+      .grant-detail {
+        padding: var(--space-5) var(--space-4);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="guide">
+    <header class="guide-header">
+      <span class="wordmark"><span class="wordmark-mark" aria-hidden="true"></span>Grant Task Tracker</span>
+      <h1 class="guide-title">Theme reference</h1>
+      <p class="guide-intro">The tracker reads like a well-kept paper register: sage paper, green-black ink and one council green for actions. Yellow highlighter is kept for what needs attention now, which is keyboard focus and overdue tasks. Nothing else is yellow.</p>
+    </header>
+
+    <section class="guide-section" aria-labelledby="palette">
+      <h2 id="palette">Palette</h2>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-chip" style="background:#eef1ec"></div><span class="swatch-name">Paper</span><span class="num">#EEF1EC</span><span class="swatch-use">Page background</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#ffffff"></div><span class="swatch-name">Sheet</span><span class="num">#FFFFFF</span><span class="swatch-use">Panels, inputs, task list</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#1d2b26"></div><span class="swatch-name">Ink</span><span class="num">#1D2B26</span><span class="swatch-use">Text, strong rules, focus ring</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#24594a"></div><span class="swatch-name">Council green</span><span class="num">#24594A</span><span class="swatch-use">Buttons, links, selection, open grants</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#f5d93b"></div><span class="swatch-name">Highlighter</span><span class="num">#F5D93B</span><span class="swatch-use">Overdue and focus only</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#b0302b"></div><span class="swatch-name">Stamp red</span><span class="num">#B0302B</span><span class="swatch-use">Errors, rejections, High priority</span></div>
+      </div>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-chip" style="background:#55665f"></div><span class="swatch-name">Muted ink</span><span class="num">#55665F</span><span class="swatch-use">Hints, metadata</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#b9c4bd"></div><span class="swatch-name">Rule</span><span class="num">#B9C4BD</span><span class="swatch-use">Hairlines, quiet borders</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#dce8e1"></div><span class="swatch-name">Council tint</span><span class="num">#DCE8E1</span><span class="swatch-use">Selected grant, completed tag</span></div>
+        <div class="swatch"><div class="swatch-chip" style="background:#f6e3e1"></div><span class="swatch-name">Stamp tint</span><span class="num">#F6E3E1</span><span class="swatch-use">Unreachable banner</span></div>
+      </div>
+    </section>
+
+    <section class="guide-section" aria-labelledby="type">
+      <h2 id="type">Type</h2>
+      <p class="guide-intro">Atkinson Hyperlegible Next for everything. It was designed for low-vision readers and keeps 0 and O, 1, l and I apart, which matters when an officer reads GR-100001 or a support reference aloud. Scale is a major third (1.25) from 16px.</p>
+      <div class="type-scale">
+        <div class="type-row"><span class="type-meta num">49px / 750</span><span style="font-size:var(--text-3xl);font-weight:750;line-height:1.1">Sign in</span></div>
+        <div class="type-row"><span class="type-meta num">31px / 750</span><span style="font-size:var(--text-xl);font-weight:750;line-height:1.1">Riverside Community Garden Inc.</span></div>
+        <div class="type-row"><span class="type-meta num">25px / 750</span><span style="font-size:var(--text-lg);font-weight:750;line-height:1.1">Tasks</span></div>
+        <div class="type-row"><span class="type-meta num">20px / 700</span><span style="font-size:var(--text-md);font-weight:700">Verify bank details</span></div>
+        <div class="type-row"><span class="type-meta num">16px / 400</span><span>Body text sits at 16px with 1.5 line height and stays under about 65 characters per line.</span></div>
+        <div class="type-row"><span class="type-meta num">13px / 700</span><span style="font-size:var(--text-sm);font-weight:700" class="num">GR-100001, reference 4bf92f35</span></div>
+      </div>
+    </section>
+
+    <section class="guide-section" aria-labelledby="controls">
+      <h2 id="controls">Buttons and fields</h2>
+      <div class="row-wrap">
+        <button class="btn btn-primary" type="button">Add task</button>
+        <button class="btn btn-secondary" type="button">Complete</button>
+        <button class="btn btn-secondary" type="button">Close grant</button>
+        <button class="btn btn-quiet" type="button">Copy full reference</button>
+        <button class="btn btn-primary" type="button" disabled>Adding task…</button>
+      </div>
+      <p class="guide-intro">Press Tab to see focus: an ink ring with a highlighter halo on buttons, and a highlighter stroke that sweeps across a field.</p>
+      <div class="demo-fields">
+        <div class="field">
+          <label class="field-label" for="demo-title">Task title</label>
+          <input class="input" id="demo-title" value="Request updated budget">
+        </div>
+        <div class="field">
+          <label class="field-label" for="demo-due">Due date</label>
+          <input class="input num" id="demo-due" type="date" value="2026-11-04" aria-invalid="true" aria-describedby="demo-due-error">
+          <p class="field-error" id="demo-due-error">Choose today or a later date.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section" aria-labelledby="tags">
+      <h2 id="tags">Status tags</h2>
+      <p class="guide-intro">Every tag says its meaning in words, so colour is never the only signal.</p>
+      <div class="row-wrap">
+        <span class="tag tag-overdue">Overdue by 10 days</span>
+        <span class="tag tag-due-today">Due today</span>
+        <span class="tag">Pending</span>
+        <span class="tag tag-completed">Completed 24 Oct</span>
+        <span class="tag tag-open">Open</span>
+        <span class="tag tag-closed">Closed</span>
+        <span class="tag tag-high">High priority</span>
+        <span class="tag tag-medium">Medium priority</span>
+        <span class="tag">Low priority</span>
+      </div>
+    </section>
+
+    <section class="guide-section" aria-labelledby="messages">
+      <h2 id="messages">Messages</h2>
+      <p class="guide-intro">Where an error appears depends on who can fix it. Errors the officer can fix sit next to the field or action that caused them. Errors they can't fix appear as a toast with a support reference. A lost connection shows a banner that stays until a request succeeds.</p>
+
+      <h3 class="guide-subtitle">Banner: server unreachable</h3>
+      <div class="banner" role="presentation">
+        <p class="banner-text"><strong>Can't reach the server.</strong> Changes you make now aren't saved. Check your connection; lists reload when it's back.</p>
+      </div>
+
+      <h3 class="guide-subtitle">Inline: a rule or field the officer can fix</h3>
+      <div class="demo-fields">
+        <div class="field">
+          <label class="field-label" for="demo-email">Email</label>
+          <input class="input" id="demo-email" type="email" value="alex.nguyen@exmple.org" aria-invalid="true" aria-describedby="demo-email-error">
+          <p class="field-error" id="demo-email-error">No officer uses this email. Check the spelling, or ask an administrator to add you.</p>
+        </div>
+        <div class="alert">
+          <p class="alert-title">This grant can't be closed yet.</p>
+          <p>Complete the High priority task "Verify bank details" first.</p>
+        </div>
+      </div>
+
+      <h3 class="guide-subtitle">Toasts: errors the officer can't fix, and confirmations</h3>
+      <div class="toast-demo">
+        <div class="toast toast-error" role="presentation">
+          <p class="toast-title">Couldn't add the task because of a server error.</p>
+          <p>Try again in a minute. If it keeps failing, give this reference to support.</p>
+          <p class="reference">Reference <span class="reference-code num">7c1e09ab</span><button class="btn btn-quiet" type="button">Copy full reference</button></p>
+          <button class="toast-close" type="button" aria-label="Close notification">&times;</button>
+        </div>
+        <div class="toast" role="presentation">
+          <p class="toast-title">You've been signed out.</p>
+          <p>Sign in again to continue.</p>
+          <button class="toast-close" type="button" aria-label="Close notification">&times;</button>
+        </div>
+        <div class="toast toast-success" role="presentation">
+          <p class="toast-title">Task added</p>
+          <button class="toast-close" type="button" aria-label="Close notification">&times;</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="guide-section" aria-labelledby="preview">
+      <h2 id="preview">Main page sketch</h2>
+      <p class="guide-intro">A sketch with seed data to show the theme on a full screen. It is not in the front-end base, where the main page stays blank; the real layout is decided in the main page plan.</p>
+
+      <div class="app">
+        <div class="app-bar">
+          <span class="wordmark"><span class="wordmark-mark" aria-hidden="true"></span>Grant Task Tracker</span>
+          <span class="app-user">Signed in as Alex Nguyen <button class="btn btn-quiet" type="button">Switch officer</button></span>
+        </div>
+
+        <nav aria-label="Grants">
+          <ul class="grant-list">
+            <li><h3 class="grant-list-heading">Grants</h3></li>
+            <li><a class="grant-link" href="#" aria-current="true"><span class="grant-ref num">GR-100001</span><span class="grant-org">Riverside Community Garden Inc.</span><span class="grant-meta">Open, 2 pending tasks</span></a></li>
+            <li><a class="grant-link" href="#"><span class="grant-ref num">GR-100002</span><span class="grant-org">Northside Youth Sports Club</span><span class="grant-meta">Open, 3 pending tasks</span></a></li>
+            <li><a class="grant-link" href="#"><span class="grant-ref num">GR-100003</span><span class="grant-org">Harbour Seniors Network</span><span class="grant-meta">Open, 1 pending task</span></a></li>
+            <li><a class="grant-link" href="#"><span class="grant-ref num">GR-100005</span><span class="grant-org">Westfield Food Bank</span><span class="grant-meta">Open, no pending tasks</span></a></li>
+            <li><a class="grant-link" href="#"><span class="grant-ref num">GR-100004</span><span class="grant-org">Eastside Arts Collective</span><span class="grant-meta">Closed</span></a></li>
+          </ul>
+        </nav>
+
+        <section class="grant-detail" aria-labelledby="grant-name">
+          <div class="grant-detail-head">
+            <div class="grant-detail-title">
+              <span class="grant-ref num">GR-100001, applied 12 Sep 2026</span>
+              <h3 id="grant-name">Riverside Community Garden Inc.</h3>
+            </div>
+            <div class="row-wrap">
+              <span class="tag tag-open">Open</span>
+              <button class="btn btn-secondary" type="button">Close grant</button>
+            </div>
+          </div>
+
+          <ul class="tasks" aria-label="Tasks">
+            <li class="task task-overdue">
+              <div>
+                <p class="task-title">Verify bank details</p>
+                <p class="task-meta"><span class="tag tag-overdue">Overdue by 10 days</span><span class="num">Due 1 Nov 2026</span><span class="tag tag-high">High priority</span></p>
+              </div>
+              <button class="btn btn-secondary" type="button">Complete</button>
+            </li>
+            <li class="task task-overdue">
+              <div>
+                <p class="task-title">Review budget</p>
+                <p class="task-meta"><span class="tag tag-overdue">Overdue by 3 days</span><span class="num">Due 8 Nov 2026</span><span class="tag tag-medium">Medium priority</span></p>
+              </div>
+              <button class="btn btn-secondary" type="button">Complete</button>
+            </li>
+            <li class="task task-completed">
+              <div>
+                <p class="task-title">Send acknowledgement letter</p>
+                <p class="task-meta"><span class="tag tag-completed">Completed 24 Oct 2026</span><span class="num">Due 22 Oct 2026</span><span class="tag">Low priority</span></p>
+              </div>
+            </li>
+          </ul>
+
+          <form class="add-task" onsubmit="return false">
+            <h4>Add a task</h4>
+            <div class="field">
+              <label class="field-label" for="new-title">Title</label>
+              <input class="input" id="new-title">
+            </div>
+            <div class="field">
+              <label class="field-label" for="new-due">Due date</label>
+              <input class="input num" id="new-due" type="date">
+            </div>
+            <div class="field">
+              <label class="field-label" for="new-priority">Priority</label>
+              <select class="input select" id="new-priority">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" type="submit">Add task</button>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
