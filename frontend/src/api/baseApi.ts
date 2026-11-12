@@ -58,9 +58,6 @@ export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery,
   tagTypes: ['Grant'],
-  // Data can be stale between refetches (a High task added by another officer, or the business day
-  // passing midnight). The server still enforces the rules, and the screen shows the refusal.
-  refetchOnFocus: true,
   refetchOnReconnect: true,
   endpoints: () => ({}),
 })
