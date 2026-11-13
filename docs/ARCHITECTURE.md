@@ -82,28 +82,80 @@ reverse), so business logic can be tested without a database.
 Queries pass through behaviours 2 and 3 untouched; they are not audited and run
 without an explicit transaction.
 
+### 4.3 HTTP API design
+
+The API uses resource routes for grants and tasks, with explicit action routes
+for business transitions:
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `POST` | `/auth/login` | Identify a seeded officer by email |
+| `GET` | `/grants?status=Open` | List grants, optionally filtered by status, with task counts |
+| `GET` | `/grants/{id}` | Get a grant with its tasks |
+| `POST` | `/grants/{id}/tasks` | Create a task on a grant |
+| `PUT` | `/grants/{id}/close` | Close a grant |
+| `GET` | `/tasks/overdue` | List overdue tasks across grants |
+| `PUT` | `/tasks/{id}` | Edit a task |
+| `PUT` | `/tasks/{id}/complete` | Complete a task |
+
+Creating a task under its grant makes the relationship explicit and lets the
+server enforce grant-specific rules. Task editing, completion and overdue
+listing use task routes because those operations act on tasks independently of
+the grant detail view. `close` and `complete` are explicit action routes rather
+than generic status updates, so the server can apply the corresponding business
+rules as one operation.
+
+Successful task creation returns `201 Created`. Task responses include an ETag
+derived from the task version; edits require that version in `If-Match` to
+reject stale updates instead of overwriting newer changes. Add and Edit accept
+an `Idempotency-Key` so a retry after a lost response can return the original
+result. Completing an already completed task is a no-op, preserving its original
+completion time. The common ProblemDetails error shape and status codes are
+defined in section 6.
+
+The grant and overdue lists are currently unpaged. This keeps the proof of
+concept simple, but means pagination and corresponding API parameters should be
+added before these lists are used with a large data set.
+
 ## 5. Patterns in use
 
 ### 5.1 Hand-rolled mediator
 
 `Send` plus ordered pipeline behaviours, nothing else: no notifications, no
 streaming, no assembly scanning. Handlers and behaviours are registered explicitly
-in `Api/DependencyInjection`. Behaviour order = registration order. It exists
-because its pipeline carries real cross-cutting work (audit, idempotency, logging)
-inside the business transaction. MediatR was rejected for its commercial licence;
-a source-generated mediator was rejected as harder to explain.
-
-### 5.2 CQRS-lite, one folder per use case
+in `Api/DependencyInjection`. Behaviour order = registration order. 
+It existsbecause its pipeline carries real cross-cutting work (audit, idempotency, logging)
+ inside the business transaction. MediatR was rejected for its commercial licence
+### 5.2 CQRS-lite, one folder per
+ use case
 
 Each use case is one folder in Core (e.g. `Users/Login/`) holding its command or
 query and its handler. Commands implement `ICommand<T>` (audited, transactional);
 queries implement `IQuery<T>`. All use the same `DbContext`.
 
-### 5.3 Ports and adapters (light)
+### 5.3 Ports and adapters
 
 Core declares the interfaces it needs; Data implements them. Handlers depend only
 on Core interfaces, so they are unit-tested with Moq. Repositories are tested for
 real against SQLite in-memory.
+
+The repository ports are focused on the queries and changes the use cases need:
+grants, tasks and users each have their own interface. Data implements these with
+EF Core queries rather than a generic CRUD repository. Read-only grant lists use
+no-tracking projections with task counts; detail and task operations load the
+related entities they need. This keeps EF Core out of Core while avoiding a
+second, generic abstraction over `DbContext`. The trade-off is a small amount of
+interface and mapping code in exchange for independently testable handlers and
+SQLite-backed repository tests.
+
+`GrantTrackerDbContext` is registered as scoped by `AddDbContext`. Repositories,
+the audit and idempotency stores, and `EfUnitOfWork` use that same scoped context,
+so tracked entity changes and related records participate in the command's
+transaction. Repositories do not save changes themselves: the Unit of Work
+provides the save, commit and rollback boundary described in the mediator
+pipeline above. Read-only queries use `AsNoTracking` where appropriate. The
+context applies entity configurations from the Data assembly and central
+conversions for UTC timestamps and `DateOnly` values.
 
 ### 5.4 Errors as typed exceptions
 
@@ -181,5 +233,6 @@ and never depend on the real date or on test order. Front-end tests run with
   (OP-1/OP-2 are out of scope for now).
 - The idempotency table grows without bound until a cleanup job exists.
 - Unexpected (500) failures write no audit row; the logs are the record.
-- Lists are unpaged (OQ-8): `GET /grants` returns every grant and `GET /grants/{id}` every task.
+- Lists have no pagination: `GET /grants` returns every grant and `GET /grants/{id}` every task.
+- Filters are on client side.
 - Data can be stale between refetches (OQ-5): the grant detail refetches when the tasks view or the Add task dialog opens and on window focus, with no polling. The server still enforces every rule, so a stale screen shows the refusal.
