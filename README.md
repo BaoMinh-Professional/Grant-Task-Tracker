@@ -93,7 +93,7 @@ UTC.
   date. A task due today is not overdue; completed tasks are never overdue.
 - The exercise does not define authorization rules but require audit trails. So this demo uses seeded user with simple sign in to emulate audit.
 - Status values in `?status=` are case-insensitive; any other value is a `400`.
-- Editing a task changes its title, due date and priority.A completed task cannot be edited (`TASK_COMPLETED`), and a task on a closed grant is read-only (`GRANT_CLOSED`).
+- Editing a task changes its title, due date and priority. A completed task cannot be edited (`TASK_COMPLETED`), and a task on a closed grant is read-only (`GRANT_CLOSED`).
 - Editing needs the task's version in `If-Match`. A stale version is `412 VERSION_CONFLICT`
   and a missing one is `428 PRECONDITION_REQUIRED`; the officer reloads the task and edits
   again. Retries of Add and Edit reuse the `Idempotency-Key` the browser created for that
@@ -305,12 +305,11 @@ If I continued, I would work through the improvements listed in
 [What I would change before real-world use](#what-i-would-change-before-real-world-use).
 I estimate completing this next round of work would take one to two days.
 
-**Time spent on the exercise:** [Add your approximate actual time spent before
-submitting.]
+**Time spent on the exercise:** 3-5 hours but that's because i was sick whole last week. It could have been faster if I was healthy.
 
 ## Known limitations
 
-- Lists aren't pagination.
+- Lists aren't paginated.
 - Filters are client side.
 - The `Version` column is an optimistic concurrency token. The edit action checks it, and a
   race on Complete returns `412 VERSION_CONFLICT` as well.
