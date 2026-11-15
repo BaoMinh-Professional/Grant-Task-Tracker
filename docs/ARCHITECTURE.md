@@ -228,7 +228,7 @@ and never depend on the real date or on test order. Front-end tests run with
 
 ## 10. Known limitations
 
-- No authentication or authorisation (identification only).
+- No authentication or authorization (identification only).
 - SQLite has a single writer; local file logs; neither suits several API copies
   (OP-1/OP-2 are out of scope for now).
 - The idempotency table grows without bound until a cleanup job exists.

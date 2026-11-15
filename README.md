@@ -149,25 +149,120 @@ operational failures.
 
 #### OP-1: Multiple API copies and restarts without disruption
 
-The demo uses a local SQLite database file and local log files, so multiple API
-copies would not share durable state or logs. For production, move persistence
-to a shared managed database, use centralized logging, and deploy stateless API
-copies behind a load balancer. Add restart and failover tests to verify that
-committed work remains available.
+Officers must not lose work or notice when a copy stops, crashes or restarts. The
+demo cannot meet this yet: each copy uses its own local SQLite file and local log
+files, so copies do not share durable state. The planned approach has these parts:
+
+- **Stateless copies behind a load balancer.** No data is held in memory between
+  requests. The load balancer sends new requests only to healthy copies (OP-5) and
+  retries connection failures on another copy. It fails fast: short timeouts per attempt, and if a copy refuses the connection or times out, it tries another healthy copy, up to a small fixed number of attempts.
+- **Safe retries.** Each write's business change and its idempotency record commit in
+  one transaction (OP-3). If a response is lost because a copy stopped, the browser
+  retries with the same `Idempotency-Key`, and whichever copy receives it returns the
+  stored result instead of applying the change twice. The screen shows "reconnecting"
+  while this happens.
+- **Graceful restarts.** A planned stop drains in-flight requests before the copy
+  exits. Deploys replace one copy at a time, and a copy receives traffic only after it
+  passes readiness.
+- **Unsaved input kept on the client.** The browser keeps form content until a save
+  succeeds, so a refresh or restart does not lose what an officer typed. Version checks
+  (`If-Match`) stop a retry from overwriting another officer's change.
+- **Database failover.** A managed standby takes over if the primary fails. The EF Core
+  connection retries transient errors, and the client retry above covers the gap.
+
 
 #### OP-5: Health checks for each API copy
 
-The demo does not expose a health endpoint that verifies database connectivity.
-Add separate liveness and readiness checks, with readiness confirming that the
-copy can reach its data store, then connect them to the hosting platform's
-traffic-routing and restart policies.
+The demo does not expose health endpoints, so nothing can tell whether a copy is
+serving requests or can reach its database. The planned approach is two health
+routes on each API copy, with a load balancer in front that routes only to copies
+reporting healthy:
+
+- `GET /health/live` returns 200 OK while the process is running. It does not check
+  the database, so a database outage does not trigger restarts.
+- `GET /health/ready` returns 200 OK only when the copy can read from its database,
+  within a short timeout. Otherwise it returns 503 Service Unavailable. The response
+  shows status only, not connection details.
+
+The load balancer polls `/health/ready` on each copy at a fixed interval. It removes a
+copy after several consecutive failures and restores it after several consecutive
+successes, so one slow response does not evict a copy. Any non-200 response counts as
+unhealthy. Officers' requests then go only to healthy copies, and the idempotent
+retries from OP-3 cover requests that were in flight when a copy failed.
+
+Limits of this design:
+
+- A load balancer only helps when all copies share one database. The demo's per-copy
+  SQLite files do not meet this, so OP-1 must be addressed first.
+- A load balancer stops routing but does not restart anything. Restarts need the
+  hosting platform's restart policy or an orchestrator's liveness probe.
+- The load balancer itself must be redundant, typically a managed service.
+- Health checks do not alert people. An external uptime monitor and alert rules are
+  still needed so the support team hears about outages.
 
 #### OP-6: Operational reporting and overdue-list performance
 
-The demo does not provide daily task-created/task-completed reporting or
-performance dashboards. Before production, add reporting or telemetry for those
-counts and measure overdue-list query duration as data grows. Use the results to
-guide indexing and pagination work; the current lists are unpaged.
+The demo does not yet report daily activity or measure overdue-list performance.
+The options below are planned, not implemented. Daily counts need a grant creation
+timestamp (`CreatedAtUtc`), which the grant table does not have yet. Day boundaries
+use the business time zone.
+
+##### Daily created and completed counts
+
+**Option A: SQL views, one for tasks and one for grants.** Each view groups its table
+by business day and returns created and completed (or closed) counts. The reporting
+endpoint applies the date range.
+
+- Pros: always current, with no extra table or job; little code; counts always match
+  the live data.
+- Cons: recalculated on every request, so cost grows with data (needs timestamp
+  indexes); views are raw SQL in a migration, which EF Core does not model natively;
+  days with no activity must be filled in code; history changes if rows are edited
+  or deleted.
+
+**Option B: Statistics table filled by a nightly background job.** The job calculates
+the previous business day's counts and upserts one row per day. The reporting endpoint
+reads that table.
+
+- Pros: fast reads regardless of data size; history survives later edits or deletions;
+  trends are easy to chart; days with no activity are easy to store.
+- Cons: today's figures appear only after the job runs (or need a separate live query);
+  an extra table and job to build and test; a missed night needs catch-up logic; each
+  API copy (OP-1) would run the job, so the upsert must be idempotent or a single-runner
+  lock is needed.
+
+Proposed starting point: Option A, since it is simpler at this data size. Option B
+becomes worthwhile when history must be kept reliably or the data grows.
+
+##### Overdue performance
+
+**Scenario 1: How the application performs.** Record the duration of each
+`GET /tasks/overdue` request and the number of rows returned.
+
+- Option A: structured request log (JSON). Serilog already records elapsed time per
+  request, so this needs only the row count added. Pros: no schema change, and the log
+  is already written. Cons: trends need aggregation; files are local to each API copy
+  and have finite retention.
+- Option B: request-metrics table. Pros: queryable, easy to aggregate and chart. Cons:
+  an extra write on every request, adding load to SQLite's single writer; more code to
+  maintain.
+
+Proposed starting point: Option A. Move to a table or a metrics tool if trends must be
+queried centrally.
+
+**Scenario 2: How often and for how long tasks are overdue.** Two parts:
+
+- Record at completion: when a task is completed while overdue, write a row with the
+  task ID, due date, completion time and days overdue. This is written in the same
+  transaction as the Complete command.
+- Nightly snapshot: a background job records the number of pending overdue tasks each
+  day, so overdue volume is visible even for tasks never completed.
+
+- Pros: the completion row captures days overdue at the moment it happened. Due dates
+  are editable, so this cannot be reliably recalculated later from the task table.
+- Cons: an extra write on the Complete path; the snapshot job has the same multi-copy
+  and missed-night concerns as Option B above; snapshot rows grow over time (slowly,
+  one per day).
 
 ### Other risks to address before production
 
