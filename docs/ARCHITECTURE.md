@@ -124,10 +124,11 @@ added before these lists are used with a large data set.
 `Send` plus ordered pipeline behaviours, nothing else: no notifications, no
 streaming, no assembly scanning. Handlers and behaviours are registered explicitly
 in `Api/DependencyInjection`. Behaviour order = registration order. 
-It existsbecause its pipeline carries real cross-cutting work (audit, idempotency, logging)
- inside the business transaction. MediatR was rejected for its commercial licence
-### 5.2 CQRS-lite, one folder per
- use case
+It exists because its pipeline carries real cross-cutting work (audit, idempotency,
+logging) inside the business transaction. MediatR was rejected because of its
+commercial licence.
+
+### 5.2 CQRS-lite, one folder per use case
 
 Each use case is one folder in Core (e.g. `Users/Login/`) holding its command or
 query and its handler. Commands implement `ICommand<T>` (audited, transactional);
@@ -189,7 +190,7 @@ then the closed-grant rule (`BR-1`).
 | --- | --- |
 | **Identity** | Seeded `Users`; `POST /auth/login { email }` (case-insensitive) returns the user; the client sends `X-User-Id` on every other request; stateless (works across API copies). **Identification for audit context, not authentication.** |
 | **Time** | `TimeProvider` is the only source of "now". `IBusinessClock` gives `UtcNow` and `Today` (the date in the configured business timezone, IANA id, default `UTC`). Rules and queries take `DateOnly today` as an argument. Moments are stored in UTC and read back as UTC; calendar dates are `DateOnly`. No `DateTime.Now`, `DateTime.Today` or `ToLocalTime()`. |
-| **Idempotency (OP-3)** | Opt-in per command (`IIdempotentCommand`); the controller copies the `Idempotency-Key` header into the command. Stored: key (PK), operation, SHA-256 of the command without the key, serialised result, `CreatedAtUtc`. Successes only. TTL documented; no cleanup job yet. `PUT`s are idempotent by checking the current state. |
+| **Idempotency (OP-3)** | Opt-in per command (`IIdempotentCommand`); the controller copies the `Idempotency-Key` header into the command. Stored: key (PK), operation, SHA-256 of the command without the key, serialised result, `CreatedAtUtc`. Successes only. Records are kept 24 hours (`IdempotencyCleanup.Retention`); an hourly background job (`IdempotencyCleanupService`) in each API copy deletes older ones, so a retry after that window runs as a new request. `PUT`s are idempotent by checking the current state. |
 | **Audit (OP-4)** | One `Audits` row per command: user, action, target, outcome (`Changed`/`NoChange`/`Replayed`/`Rejected`), error code, trace id, idempotency key, UTC time. |
 | **Logging and correlation (OP-4)** | Serilog: console plus a daily rolling compact-JSON file (`logs/grant-tracker-<date>.json`). Every line carries the trace id (`@tr`); user id, request name and idempotency key are added as properties. The same trace id is in ProblemDetails and audit rows. |
 | **Persistence** | SQLite file `App_Data/grant-tracker.db` (relative to the content root, git-ignored). EF Core migrations are applied at startup; seed data (relative to "today") is added only to an empty database. Enums are stored as text. |
@@ -231,7 +232,7 @@ and never depend on the real date or on test order. Front-end tests run with
 - No authentication or authorization (identification only).
 - SQLite has a single writer; local file logs; neither suits several API copies
   (OP-1/OP-2 are out of scope for now).
-- The idempotency table grows without bound until a cleanup job exists.
+- The idempotency table is bounded by the 24-hour retention, so it holds roughly one day of successful writes. Several API copies can each run the hourly purge safely, because it only deletes expired rows.
 - Unexpected (500) failures write no audit row; the logs are the record.
 - Lists have no pagination: `GET /grants` returns every grant and `GET /grants/{id}` every task.
 - Filters are on client side.

@@ -9,6 +9,13 @@
 # Jordan Lee    00000000-0000-0000-0000-000000000004
 # Maria Garcia  00000000-0000-0000-0000-000000000005
 
+# Due dates in this file are in 2027 so they are not in the past (BR-2 refuses past
+# due dates). Update them once 2027 has passed.
+#
+# Run the requests in order. The demo changes data (task 201 is edited, then
+# completed, and GR-100001 is closed), so reset the database before running again
+# (see README, "Reset the demo"). Task 201 must still be at version 1 for the edit.
+
 ### Login as Alex
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
@@ -42,31 +49,43 @@ X-User-Id: 00000000-0000-0000-0000-000000000001
 GET {{baseUrl}}/grants/00000000-0000-0000-0000-000000000101
 X-User-Id: 00000000-0000-0000-0000-000000000001
 
-### Add task to GR-100004
+### Add task to GR-100004 (fixed Idempotency-Key, so the replay below uses the same key)
 POST {{baseUrl}}/grants/00000000-0000-0000-0000-000000000104/tasks
 X-User-Id: 00000000-0000-0000-0000-000000000001
-Idempotency-Key: {{$guid}}
+Idempotency-Key: demo-add-call-applicant
 Content-Type: application/json
 
-{ "title": "Call applicant", "dueDate": "2026-03-10", "priority": "Low" }
+{ "title": "Call applicant", "dueDate": "2027-06-30", "priority": "Low" }
+
+### Replay of the same Add task (same key, same body): returns the same task, creates no duplicate
+POST {{baseUrl}}/grants/00000000-0000-0000-0000-000000000104/tasks
+X-User-Id: 00000000-0000-0000-0000-000000000001
+Idempotency-Key: demo-add-call-applicant
+Content-Type: application/json
+
+{ "title": "Call applicant", "dueDate": "2027-06-30", "priority": "Low" }
 
 ### Close GR-100001 (refused while a High task is pending, BR-5)
 PUT {{baseUrl}}/grants/00000000-0000-0000-0000-000000000101/close
 X-User-Id: 00000000-0000-0000-0000-000000000001
 
-### Complete task "Verify bank details"
-PUT {{baseUrl}}/tasks/00000000-0000-0000-0000-000000000201/complete
-X-User-Id: 00000000-0000-0000-0000-000000000001
-
-### Overdue tasks
+### Overdue tasks (before the edit: "Verify bank details" and "Review progress report")
 GET {{baseUrl}}/tasks/overdue
 X-User-Id: 00000000-0000-0000-0000-000000000001
 
-### Edit task "Verify bank details" (If-Match is the task's version)
+### Edit task "Verify bank details" (If-Match is version 1, the seeded version)
 PUT {{baseUrl}}/tasks/00000000-0000-0000-0000-000000000201
 X-User-Id: 00000000-0000-0000-0000-000000000001
 If-Match: "1"
 Idempotency-Key: {{$guid}}
 Content-Type: application/json
 
-{ "title": "Verify bank details", "dueDate": "2026-03-07", "priority": "High" }
+{ "title": "Verify bank details", "dueDate": "2027-07-15", "priority": "High" }
+
+### Complete task "Verify bank details" (after the edit; the task is now at version 2)
+PUT {{baseUrl}}/tasks/00000000-0000-0000-0000-000000000201/complete
+X-User-Id: 00000000-0000-0000-0000-000000000001
+
+### Close GR-100001 again: now succeeds, because no High task is pending
+PUT {{baseUrl}}/grants/00000000-0000-0000-0000-000000000101/close
+X-User-Id: 00000000-0000-0000-0000-000000000001
